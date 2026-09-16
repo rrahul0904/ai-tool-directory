@@ -1,0 +1,45 @@
+name: Bootstrap verified source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.bootstrap/source.zip.b64'
+
+permissions:
+  contents: write
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package.json
+      - name: Unpack candidate source
+        shell: bash
+        run: |
+          base64 --decode .bootstrap/source.zip.b64 > /tmp/source.zip
+          unzip -oq /tmp/source.zip -d .
+      - name: Install dependencies and generate lockfile
+        run: npm install --no-audit --no-fund
+      - name: Verify release candidate
+        run: npm run verify
+      - name: Publish verified source
+        shell: bash
+        run: |
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: publish verified end-to-end SignalIndex directory"
+          git push origin HEAD:main
