@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.bootstrap/source.zip.b64'
+      - '.bootstrap/retry'
       - '.github/workflows/bootstrap.yml'
 
 permissions:
