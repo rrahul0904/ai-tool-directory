@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.bootstrap/source.zip.b64'
+      - '.github/workflows/bootstrap.yml'
 
 permissions:
   contents: write
@@ -22,8 +23,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package.json
       - name: Unpack candidate source
         shell: bash
         run: |
