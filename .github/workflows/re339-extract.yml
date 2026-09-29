@@ -1,0 +1,31 @@
+name: Expand verified RE-339 P1 source
+on:
+  push:
+    branches: [re339-p1-catalog-contracts]
+    paths:
+      - '.bootstrap/re339-p1.tgz'
+      - '.github/workflows/re339-extract.yml'
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify P1 archive checksum
+        run: echo "5cff8fdb8d936882ae2126b3c3bae6351f5769f7388d70a04d085f6ff2014886  .bootstrap/re339-p1.tgz" | sha256sum -c -
+      - name: Expand P1 candidate and run offline tests
+        run: |
+          tar --no-same-owner -xzf .bootstrap/re339-p1.tgz
+          node --experimental-strip-types --test tests/ecosystem-catalog.test.mjs
+      - name: Publish source on isolated branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .bootstrap/re339-p1.tgz .github/workflows/re339-extract.yml
+          git add src/lib/ecosystem/catalog.ts supabase/migrations/002_ecosystem_catalog_p1.sql tests/ecosystem-catalog.test.mjs docs/research/RE-339-claude-ecosystem-intelligence.md .github/workflows/re339-p1.yml
+          git commit -m "feat(re339): add isolated P1 catalog contracts and synthetic tests"
+          git push origin HEAD:re339-p1-catalog-contracts
