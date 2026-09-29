@@ -1,0 +1,22 @@
+name: RE-339 P1 domain tests
+on:
+  push:
+    branches: [re339-p1-catalog-contracts]
+  pull_request:
+    paths:
+      - 'src/lib/ecosystem/**'
+      - 'supabase/migrations/002_ecosystem_catalog_p1.sql'
+      - 'tests/ecosystem-catalog.test.mjs'
+      - '.github/workflows/re339-p1.yml'
+permissions:
+  contents: read
+jobs:
+  domain-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated synthetic contract tests (no downloads/DB/network)
+        run: node --experimental-strip-types --test tests/ecosystem-catalog.test.mjs
